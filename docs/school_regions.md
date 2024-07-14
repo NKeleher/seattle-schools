@@ -1,7 +1,7 @@
 
 # Well-Resourced Schools
 
-## Sharing Data on Seattle Public Elementary Schools
+## By SPS Region
 
 ```js
 // Load raw data
@@ -105,92 +105,16 @@ function sparkbarSimple(max) {
 };
 ```
 
-Seattle Public Schools (SPS) is currently exploring options to reduce the number
-of elementary schools in Seattle. On June 26th, 2024, SPS provided details
-about the criteria that are considered when assessing school building resources.
-
-SPS shared the presentation as well as an appendix with data on each elementary
-school. Materials from the June 26th meeting can be found on the [SPS Website](https://www.seattleschools.org/news/safety-planning-update-and-progress-for-a-system-of-well-resourced-schools/).
-
-The purpose of this website is to make data on Seattle Elementary Schools more accessible to the general public in order to promote more transparency
-about the data behind the criteria that SPS has laid out for assessing
-*well-resourced schools*. Data provided by SPS cover **73 public elementary schools**, including 60 neighborhood schools (5 of which include highly-capable student programs) and 13 option schools (of which 8 are K-8 schools).
-
-```js
-Plot.plot({
-    title: "Seattle Public Elementary Schools",
-    subtitle: "5 SPS regions: Northeast (13 schools), Northwest (17), Central (15), Southeast (15), Southwest (13)",
-    projection: {
-      type: "mercator",
-      domain: ms_boundaries,
-    },
-    r: {label: "Enrollment (June 2024)"},
-    symbol: {label: "Type", legend: true},
-    color: {label: "Region", legend: true},
-    width,
-    marks: [
-      Plot.geo(es_boundaries, {
-        stroke: "#9498a0",
-        strokeWidth: 0.5
-      }),
-      Plot.geo(ms_boundaries, {
-        stroke: "#000000",
-        strokeWidth: 1.0
-      }),
-      Plot.dot(schools, {
-        x: "longitude",
-        y: "latitude",
-        r: "p223_k5_count",
-        stroke: "currentColor",
-        strokeWidth: 0.5,
-        symbol: "k_8",
-        fill: "region",
-        tip: {
-          format: {
-            school: true,
-            middle_school_attendance_area: true,
-            building_condition: true,
-            learning_environment: true,
-            budget_per_k8_student: true,
-            r: true,
-            y: false,
-            x: false,
-            symbol: false,
-            nearest_school: true,
-            distance_to_nearest_school: true,
-            fill: true
-          }
-        },
-        channels: {
-                    "School": "school",
-                    "Building Condition": "building_condition",
-                    "Learning Environment": "learning_environment",
-                    "Building Capacity": "capacity",
-                    "School Type": "option_school",
-                    "$/Student": "budget_per_k8_student",
-                    "Middle School": "middle_school_attendance_area",
-                    "Nearest Elementary": "nearest_school",
-                    "Distance (miles)": "distance_to_nearest_school",
-
-                    },
-      })
-    ],
-    caption: "Note: Size of points indicates relative enrollment (June 2024)",
-  })
-```
-
-View data for specific SPS Regions in the following table. For more information about the data included on this website, see [Data Sources](data_sources).
+Select the region to focus dashboards on:
 
 ```js
 const schoolsRegion = view(
-  Inputs.checkbox(
+  Inputs.select(
     d3.group(schools, (d) => d.region),
     {label: "SPS Region", key: ["Northwest", "Northeast", "Central", "Southwest", "Southeast"]}
   )
 );
 ```
-
-Sort the table by clicking on the column header.
 
 ```js
 view(Inputs.table(schoolsRegion.flat(), {
@@ -205,20 +129,20 @@ view(Inputs.table(schoolsRegion.flat(), {
     // "budget_per_k8_student",
   ],
   format: {
-    "building_condition": sparkbar(d3.max(schools, d => d.building_condition)),
-    "learning_environment": sparkbarRev(d3.max(schools, d => d.learning_environment)),
-    "capacity": sparkbar(d3.max(schools, d => d.capacity)),
-    "building_condition_rank": sparkbar(d3.max(schools, d => d.building_condition_rank)),
-    "learning_environment_rank": sparkbar(d3.max(schools, d => d.learning_environment_rank)),
-    "capacity_rank": sparkbar(d3.max(schools, d => d.capacity_rank)),
-    "p223_k5_count": sparkbar(d3.max(schools, d => d.p223_k5_count)),
+    "building_condition": sparkbar(d3.max(schoolsRegion.flat(), d => d.building_condition)),
+    "learning_environment": sparkbarRev(d3.max(schoolsRegion.flat(), d => d.learning_environment)),
+    "capacity": sparkbar(d3.max(schoolsRegion.flat(), d => d.capacity)),
+    "building_condition_rank": sparkbar(d3.max(schoolsRegion.flat(), d => d.building_condition_rank)),
+    "learning_environment_rank": sparkbar(d3.max(schoolsRegion.flat(), d => d.learning_environment_rank)),
+    "capacity_rank": sparkbar(d3.max(schoolsRegion.flat(), d => d.capacity_rank)),
+    "p223_k5_count": sparkbar(d3.max(schoolsRegion.flat(), d => d.p223_k5_count)),
     // "total_budget": (value) => {
     //   const formattedValue = '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    //   return sparkbar(d3.max(schools, d => d.budget))(formattedValue);
+    //   return sparkbar(d3.max(schoolsRegion.flat(), d => d.budget))(formattedValue);
     // },
     // "budget_per_k8_student": (value) => {
     //   const formattedValue = '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    //   return sparkbar(d3.max(schools, d => d.budget))(formattedValue);
+    //   return sparkbar(d3.max(schoolsRegion.flat(), d => d.budget))(formattedValue);
     // },
   },
   header: {
@@ -234,34 +158,6 @@ view(Inputs.table(schoolsRegion.flat(), {
 }))
 ```
 
-All figures below are also available [by region](school_regions).
-
-## What are Well-Resourced Schools?
-
-The documents shared by SPS indicate the following criteria will be used to assess a *well-resourced school*:
-
-- Building condition
-- Learning environment
-- Capacity
-- Location
-
-To examine multiple criteria, this website aims to provide analysis of multiple dimensions
-of data on Seattle public elementary schools. The following
-three criteria are measured in the SPS data.
-
-- **Building Condition**: Each building is rated on a scale of 0 to 100: Excellent (100%), Good (90%), Fair (62%), Poor (30%), Unsatisfactory (0%).
-- **Learning Environment**: Ranges from 1 to 5, with lower numbers indicating a more suitable learning environment (1- Excellent, 2 - Good, 3 - Fair, 4 - Poor, 5 - Unsuitable)
-- **Building Capacity**: Number of students the building can accommodate for grades K-5 only for both elementary and K-8 schools
-
-In the figure below, I have converted data on building condition, learning environment,
-and building capacity by sorting the schools from 1 to 73. Where there are ties I have added random noise to the
-rankings to avoid overlapping values.
-
-The bottom left of the graph indicates that there are 17 elementary school buildings
-that rank below 50 for building condition as well as learning environment. Among
-these buildings the following 7 buildings also have capacity below the 400 students
-that SPS has targeted: Wedgewood, Sacajawea, North Beach, Sanislo, Laurelhurst, Decatur, and Beacon Hill International.
-
 ```js
 Plot.plot({
     title: "Relationship across building resource metrics",
@@ -275,7 +171,7 @@ Plot.plot({
     },
     marks: [
       Plot.text([{x: 80, y: 80, text: "Low Building Condition & Low Learning Environment"}]),
-      Plot.dot(schools,
+      Plot.dot(schoolsRegion.flat(),
         {
           x: "building_condition_rank",
           y: "learning_environment_rank",
@@ -309,15 +205,6 @@ Plot.plot({
                 })
 ```
 
-## Location
-
-SPS did not explicitly state what factors it would consider in accounting for the location of well-resourced schools. If the school district were
-to limit the number of elementary schools per school region, this would mean closing 3 schools in Northeast, 7 schools in Northwest, 5 schools in Central, 5 schools in Southeast, and 3 schools in Southwest.
-
-The figure below shows each school, the closest school, and the distance (miles) between the schools. Decatur and Thornton Creek are the two schools with the least distance between each other, less than 0.05 miles. While Arbor Heights is the school with the farthest distance to it's nearest school (1.6 miles).
-
-Among the 19 school buildings with the lowest capacity (450 or fewer students), 17 schools are within one mile of another public elementary school. Among these lower capacity buildings, only McGilvra and Rainier View are greater than one mile from their nearest elementary school.
-
 ```js
 Plot.plot({
     title: "Distance to Nearest Schools",
@@ -328,7 +215,7 @@ Plot.plot({
     symbol: {label: "K-8", legend: true},
     color: {label: "Region", legend: true},
     marks: [
-      Plot.dot(schools,
+      Plot.dot(schoolsRegion.flat(),
         {
           x: "distance_to_nearest_school",
           y: "capacity",
@@ -359,11 +246,6 @@ Plot.plot({
                 })
 ```
 
-## Budget
-
-SPS also provided data on the administrative costs of operating each school
-building. The figure below shows the relationship between enrollment and total administrative budget of each school building.
-
 ```js
 Plot.plot({
     title: "Relationship between budget and enrollment",
@@ -374,8 +256,8 @@ Plot.plot({
     color: {label: "Building Capacity", legend: true,
           scheme: "Cool"
     },
-        marginLeft: 50,
-    marks: [Plot.dot(schools,
+    marginLeft: 50,
+    marks: [Plot.dot(schoolsRegion.flat(),
         {
           x: "p223_k8_count",
           y: "total_budget",
@@ -407,9 +289,6 @@ Plot.plot({
                 })
 ```
 
-The figure below shows the per student administrative costs of each school.
-For K-8 schools, the per student costs are calculated base on K-8 student enrollment. We see in the figure that per-student budgets range from $2,900 per student (Bryant) to $14,996 per student (Licton Springs).
-
 ```js
 Plot.plot({
   title: "School administrative budget per student (2024)",
@@ -420,9 +299,9 @@ Plot.plot({
     },
   marginLeft: 100,
   marks: [
-    Plot.ruleY(schools, {x: "budget_per_k8_student", y: "school", stroke: "capacity", strokeWidth: 2}),
-    Plot.ruleX(schools, {x: 5507.9259, strokeWidth: 2}),
-    Plot.dot(schools, {
+    Plot.ruleY(schoolsRegion.flat(), {x: "budget_per_k8_student", y: "school", stroke: "capacity", strokeWidth: 2}),
+    Plot.ruleX(schoolsRegion.flat(), {x: 5507.9259, strokeWidth: 2}),
+    Plot.dot(schoolsRegion.flat(), {
           x: "budget_per_k8_student",
           y: "school",
           symbol: "k_8",
